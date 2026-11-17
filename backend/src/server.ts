@@ -1,9 +1,12 @@
 import express from 'express';
 import { askModel } from './model';
-
-console.log('key loaded:', Boolean(process.env.GEMINI_API_KEY))
+import { mcpClient } from "./mcpClient";
 
 const app = express();
+const mcpclient = await mcpClient();
+const { tools } = await mcpclient.listTools();
+
+console.log("mcptools", tools);
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
