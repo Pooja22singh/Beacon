@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "tsx --env-file=.env src/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
   "packageManager": "pnpm@12.18.0",
   "type": "module",
   "dependencies": {
+    "@google/genai": "^3.4.0",
     "@modelcontextprotocol/server": "^2.4.0",
     "pg": "^8.23.1",
     "zod": "^4.6.7"
