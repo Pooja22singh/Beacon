@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/server"
 import * as z from 'zod/v4';
-import { orders } from "../orders";
+import { pool } from '../db.js'
 
 export const registerGetOrder = (server: McpServer) => {
     server.registerTool('get_order', {
@@ -11,17 +11,16 @@ export const registerGetOrder = (server: McpServer) => {
         })
     },
         async ({ orderId, userId }) => {
-            const order = orders.find((order) => order.id === orderId && order.userId === userId);
-            if (!order) {
+            const { rows } = await pool.query(
+                'SELECT id, item, status, eta::text AS eta FROM orders WHERE id = $1 AND user_id = $2',
+                [orderId, userId]
+            )
+            console.error('get_order', { orderId, userId, rowCount: rows.length })
+            if (rows.length === 0) {
                 return { content: [{ type: 'text', text: 'Order not found' }] }
             }
-            const { id, item, status, eta } = order;
-            return {
-                content: [{
-                    type: "text",
-                    text: JSON.stringify({ id, item, status, eta })
-                }]
-            }
+
+            return { content: [{ type: 'text', text: JSON.stringify(rows[0]) }] }
         }
     )
 }
