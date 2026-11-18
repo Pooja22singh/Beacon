@@ -18,13 +18,13 @@ app.get('/health', (_req, res) => {
 })
 
 app.post('/chat', async (req, res) => {
-    const { message } = req.body
-    if (!message) {
-        return res.status(400).json({ error: 'message is required' })
+    const { messages } = req.body;
+    if (!Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: 'messages is required' })
     }
 
     try {
-        const reply = await runAgent(mcpclient, geminiTools, DEMO_USER_ID, message)
+        const reply = await runAgent(mcpclient, geminiTools, DEMO_USER_ID, messages.slice(-20));
         res.json({ reply })
     } catch (err) {
         console.error(err)

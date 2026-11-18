@@ -8,11 +8,14 @@ function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
 
+
   async function send() {
     const text = input.trim()
     if (!text || loading) return
 
-    setMessages((prev) => [...prev, { role: 'user', text }])
+    const userMsg: Message = { role: 'user', text }
+    const history = [...messages, userMsg]
+    setMessages(history)
     setInput('')
     setLoading(true)
 
@@ -20,7 +23,7 @@ function App() {
       const res = await fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ messages: history }),
       })
       if (!res.ok) throw new Error(`Server error ${res.status}`)
       const data = await res.json()

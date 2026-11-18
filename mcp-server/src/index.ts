@@ -1,13 +1,15 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
-import * as z from 'zod/v4'
 import { registerGetOrder } from './tools/getOrder';
 import { registerSearchPolicies } from './tools/searchPolicies.js'
+import { registerCreateTicket } from './tools/createTicket.js'
+
 
 const createServer = () => {
     const server = new McpServer({ name: 'beacon', version: '1.0.1' });
     registerGetOrder(server);
-    registerSearchPolicies(server)
+    registerSearchPolicies(server);
+    registerCreateTicket(server)
     return server;
 }
 
