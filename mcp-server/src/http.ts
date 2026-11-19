@@ -18,7 +18,7 @@ function isAuthorized(header: string | undefined): boolean {
 
 const PORT = Number(process.env.PORT ?? 4000)
 
-createHttpServer((req, res) => {
+const server = createHttpServer((req, res) => {
     const path = (req.url ?? '').split('?')[0]
 
     if (path === '/health') {
@@ -37,6 +37,18 @@ createHttpServer((req, res) => {
         return
     }
     void nodeHandler(req, res)
-}).listen(PORT, () => {
+})
+
+server.listen(PORT, () => {
     console.error('beacon MCP server (http) on port', PORT)
 })
+
+// Docker stops containers with SIGTERM. Finish in-flight requests, then exit.
+const shutdown = (signal: string) => {
+    console.error(signal, 'received, shutting down')
+    server.close(() => process.exit(0))
+    setTimeout(() => process.exit(1), 10_000).unref()
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
