@@ -1,0 +1,73 @@
+# Production stack for a single Linux server. Pulls prebuilt images, never builds.
+#
+#   internet -> caddy:443 (HTTPS) -> web:80 (nginx) -> backend-1 / backend-2 -> mcp:4000
+#
+# Run from this folder:  docker compose -f docker-compose.prod.yml up -d
+# Needs: backend.env and mcp.env next to this file (see the *.example files), and SITE_ADDRESS.
+
+x-backend: &backend
+  image: ${IMAGE_PREFIX:-ghcr.io/pooja22singh/beacon}-backend:${TAG:-latest}
+  restart: unless-stopped
+  env_file: ./backend.env
+  environment:
+    NODE_ENV: production
+    PORT: "3000"
+    MCP_URL: http://mcp:4000/mcp
+  depends_on:
+    mcp:
+      condition: service_healthy
+  networks: [appnet, mcpnet]
+  stop_grace_period: 15s
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Public hostname, for example 203-0-113-10.sslip.io or your own domain
+      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS to the public hostname}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates live here, so restarts do not request new ones
+      - caddy_data:/data
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [appnet]
+
+  web:
+    image: ${IMAGE_PREFIX:-ghcr.io/pooja22singh/beacon}-web:${TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      backend-1:
+        condition: service_healthy
+      backend-2:
+        condition: service_healthy
+    networks: [appnet]
+
+  backend-1:
+    <<: *backend
+
+  backend-2:
+    <<: *backend
+
+  mcp:
+    image: ${IMAGE_PREFIX:-ghcr.io/pooja22singh/beacon}-mcp:${TAG:-latest}
+    restart: unless-stopped
+    env_file: ./mcp.env
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+    networks: [mcpnet]
+    stop_grace_period: 15s
+
+networks:
+  appnet:
+  # Shared only by the backends and the MCP server. No published ports.
+  mcpnet:
+
+volumes:
+  caddy_data:

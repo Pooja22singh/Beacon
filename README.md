@@ -93,6 +93,24 @@ The app is served on `http://localhost:8080` (change with `WEB_PORT`). Only Ngin
 Google sign-in, add `http://localhost:8080` to the OAuth client's authorized origins. The Google
 client id is read at build time, so set `VITE_GOOGLE_CLIENT_ID` in your shell before building.
 
+## Deploy
+
+Pushes to `main` run CI, then build three images and publish them to GitHub Container Registry
+(`beacon-backend`, `beacon-mcp`, `beacon-web`). The server never builds, it only pulls.
+
+On a Linux server with Docker, from the `deploy/` folder:
+
+```bash
+cp backend.env.example backend.env   # fill in real values, use a NEW MCP_TOKEN
+cp mcp.env.example mcp.env           # same MCP_TOKEN as backend.env
+export SITE_ADDRESS=your-hostname    # Caddy gets the HTTPS certificate for it
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Update to a new release with `docker compose -f docker-compose.prod.yml pull` then `up -d`.
+Images are tagged `latest` and with the commit SHA, so a bad release can be rolled back by setting `TAG`.
+The production compose file runs Caddy (HTTPS) in front of Nginx, two backend copies and the private MCP service.
+
 ## Environment variables
 
 | Service | Variable | Purpose |
