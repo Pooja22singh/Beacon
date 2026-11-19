@@ -5,7 +5,7 @@ on:
     branches: [main]
   pull_request:
 
-# Read-only token: CI only needs to check out the code
+# Read-only token by default. The publish job asks for more, only for itself.
 permissions:
   contents: read
 
@@ -50,12 +50,44 @@ jobs:
       - run: ${{ matrix.check }}
       - run: pnpm build
 
+  # Pull requests: prove the images still build, publish nothing
   docker:
     name: docker images
+    if: github.event_name == 'pull_request'
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      # Builds all four images exactly as the compose file defines them
       - run: docker compose build
+
+  # Main: build the three images and push them to GitHub Container Registry.
+  # The server only pulls these images, it never builds.
+  publish:
+    name: publish images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      # The public Google client id is baked into the UI at build time.
+      # Set it as a repository variable (not a secret): Settings > Variables.
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Build and push
+        run: |
+          PREFIX="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/beacon"
+          docker build -t "$PREFIX-backend:latest" -t "$PREFIX-backend:${GITHUB_SHA}" backend
+          docker build -t "$PREFIX-mcp:latest" -t "$PREFIX-mcp:${GITHUB_SHA}" mcp-server
+          docker build --build-arg VITE_GOOGLE_CLIENT_ID="$VITE_GOOGLE_CLIENT_ID" \
+            -t "$PREFIX-web:latest" -t "$PREFIX-web:${GITHUB_SHA}" frontend
+          for name in backend mcp web; do
+            docker push "$PREFIX-$name:latest"
+            docker push "$PREFIX-$name:${GITHUB_SHA}"
+          done
