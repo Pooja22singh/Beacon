@@ -1,10 +1,5 @@
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
-
-const requireEnv = (name: string): string => {
-    const value = process.env[name]
-    if (!value) throw new Error(`${name} is required`)
-    return value
-}
+import { requireEnv } from './env.js'
 
 export const mcpClient = async () => {
     const client = new Client({ name: 'beacon-host', version: '1.0.0' })

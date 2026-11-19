@@ -2,9 +2,10 @@ import type { Request, Response, NextFunction } from 'express'
 import { OAuth2Client } from 'google-auth-library'
 import jwt from 'jsonwebtoken'
 import { pool } from './db.js'
+import { requireEnv } from './env.js'
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!
-const SESSION_SECRET = process.env.SESSION_SECRET!
+const GOOGLE_CLIENT_ID = requireEnv('GOOGLE_CLIENT_ID')
+const SESSION_SECRET = requireEnv('SESSION_SECRET')
 const COOKIE = 'beacon_session'
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
