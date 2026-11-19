@@ -1,0 +1,61 @@
+# Beacon: Nginx (static UI + reverse proxy) -> two backend copies -> MCP server.
+# The database is Neon (external), so there is no db service here.
+#
+#   browser -> web:80 -> backend-1 / backend-2 -> mcp:4000 -> Neon, Gemini
+#
+# Networks: only `web` is published to the host. `mcpnet` is shared by the backends and
+# the MCP server, and the proxy is not on it, so the MCP server is unreachable from outside.
+
+x-backend: &backend
+  build: ./backend
+  restart: unless-stopped
+  env_file:
+    - path: ./backend/.env
+      required: false
+  environment:
+    NODE_ENV: production
+    PORT: "3000"
+    MCP_URL: http://mcp:4000/mcp
+  depends_on:
+    mcp:
+      condition: service_healthy
+  networks: [appnet, mcpnet]
+  stop_grace_period: 15s
+
+services:
+  mcp:
+    build: ./mcp-server
+    restart: unless-stopped
+    env_file:
+      - path: ./mcp-server/.env
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+    networks: [mcpnet]
+    stop_grace_period: 15s
+
+  backend-1:
+    <<: *backend
+
+  backend-2:
+    <<: *backend
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      backend-1:
+        condition: service_healthy
+      backend-2:
+        condition: service_healthy
+    networks: [appnet]
+
+networks:
+  appnet:
+  mcpnet:
