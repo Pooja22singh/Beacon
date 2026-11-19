@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "tsx --env-file=.env src/seed.ts",
-    "dev:http": "tsx watch --env-file=.env src/http.ts"
+    "dev:http": "tsx watch --env-file=.env src/http.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start:http": "node dist/http.js"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +31,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
