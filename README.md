@@ -121,6 +121,7 @@ The production compose file runs Caddy (HTTPS) in front of Nginx, two backend co
 | backend | `DATABASE_URL` | Postgres connection |
 | backend | `MCP_URL`, `MCP_TOKEN` | MCP server address and bearer token |
 | backend | `PORT` | Optional, defaults to 3000 |
+| backend, mcp-server | `DB_POOL_MAX` | Optional, connections per copy, defaults to 5 |
 | mcp-server | `DATABASE_URL`, `GEMINI_API_KEY` | Data and embeddings |
 | mcp-server | `MCP_TOKEN` | Must match the backend's token |
 | mcp-server | `PORT` | Optional, defaults to 4000 |
