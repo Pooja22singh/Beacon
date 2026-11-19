@@ -1,12 +1,17 @@
-import { Client } from '@modelcontextprotocol/client'
-import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+
+const requireEnv = (name: string): string => {
+    const value = process.env[name]
+    if (!value) throw new Error(`${name} is required`)
+    return value
+}
 
 export const mcpClient = async () => {
     const client = new Client({ name: 'beacon-host', version: '1.0.0' })
-    const transport = new StdioClientTransport({
-        command: "pnpm",
-        args: ['--dir', '../mcp-server', 'exec', 'tsx', '--env-file=.env', 'src/index.ts'],
-    });
-    await client.connect(transport);
-    return client;
+    const token = requireEnv('MCP_TOKEN')
+    const transport = new StreamableHTTPClientTransport(new URL(requireEnv('MCP_URL')), {
+        authProvider: { token: async () => token },
+    })
+    await client.connect(transport)
+    return client
 }
