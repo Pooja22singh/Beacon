@@ -92,8 +92,20 @@ app.post('/chat', requireUser, chatLimiter, async (req, res) => {
     }
 })
 
-const PORT = 3000
+const PORT = Number(process.env.PORT ?? 3000)
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log('Server is running on port', PORT)
 })
+
+// Docker stops containers with SIGTERM. Finish in-flight requests, then close connections.
+const shutdown = (signal: string) => {
+    console.log(signal, 'received, shutting down')
+    server.close(() => {
+        void Promise.allSettled([mcpclient.close(), pool.end()]).then(() => process.exit(0))
+    })
+    setTimeout(() => process.exit(1), 10_000).unref()
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
