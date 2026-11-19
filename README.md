@@ -3,7 +3,7 @@
 A customer support chat agent. Users sign in with Google, then chat with an assistant that can
 answer policy questions (RAG), look up their orders and open support tickets.
 
-**Live demo:** _add the deployed URL here_
+**Live demo:** https://beacon-support.duckdns.org (sign in with Google)
 
 ## How it works
 
