@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "tsx --env-file=.env src/seed.ts"
+    "seed": "tsx --env-file=.env src/seed.ts",
+    "dev:http": "tsx watch --env-file=.env src/http.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
   "type": "module",
   "dependencies": {
     "@google/genai": "^3.4.0",
+    "@modelcontextprotocol/node": "^2.1.2",
     "@modelcontextprotocol/server": "^2.4.0",
     "pg": "^8.23.1",
     "zod": "^4.6.7"
