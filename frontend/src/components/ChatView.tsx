@@ -6,6 +6,7 @@ import { BeaconDot } from './BeaconDot'
 import { Button } from './Button'
 import { Composer } from './Composer'
 import { EmptyState } from './EmptyState'
+import { MaintainerCredit } from './MaintainerCredit'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { UserMenu } from './UserMenu'
@@ -117,6 +118,7 @@ export const ChatView = ({ user, onSignOut, onUnauthorized }: Props) => {
                         onSubmit={() => submit(input)}
                         disabled={sending}
                     />
+                    <MaintainerCredit className="text-center" />
                 </div>
             </footer>
         </div>

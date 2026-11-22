@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { signInWithGoogle } from '../lib/api'
 import type { User } from '../types'
 import { BeaconDot } from './BeaconDot'
+import { MaintainerCredit } from './MaintainerCredit'
 
 const GSI_SRC = 'https://accounts.google.com/gsi/client'
 const GOOGLE_CLIENT_ID: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -55,7 +56,7 @@ export const SignIn = ({ onSignedIn }: Props) => {
     }, [onSignedIn])
 
     return (
-        <main className="grid min-h-dvh place-items-center bg-background p-4">
+        <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background p-4">
             <section className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl border bg-card px-6 py-8 text-center text-card-foreground shadow-sm">
                 <div className="flex items-center gap-2.5">
                     <BeaconDot />
@@ -76,6 +77,7 @@ export const SignIn = ({ onSignedIn }: Props) => {
                     </p>
                 )}
             </section>
+            <MaintainerCredit />
         </main>
     )
 }
